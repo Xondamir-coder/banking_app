@@ -7,7 +7,6 @@ class TransactionModel {
   final String description;
   final String amount;
   final CategoryModel category;
-  final String id;
   final bool isExpense;
   final bool isCash;
 
@@ -15,7 +14,6 @@ class TransactionModel {
     String? description,
     required this.amount,
     required this.category,
-    required this.id,
     required this.isExpense,
     required this.isCash,
   }) : description = description ?? '';
@@ -25,7 +23,6 @@ class TransactionModel {
       'description': description,
       'amount': amount,
       'category': category.toMap(),
-      'id': id,
       'isExpense': isExpense,
       'isCash': isCash,
     };
@@ -36,7 +33,6 @@ class TransactionModel {
       description: map['description'] as String,
       amount: map['amount'] as String,
       category: CategoryModel.fromMap(map['category'] as Map<String, dynamic>),
-      id: map['id'] as String,
       isExpense: map['isExpense'] as bool,
       isCash: map['isCash'] as bool,
     );

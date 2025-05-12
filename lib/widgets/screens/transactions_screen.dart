@@ -1,5 +1,5 @@
 import 'package:banking_app/models/category_model.dart';
-import 'package:banking_app/widgets/transaction/budget_list.dart';
+import 'package:banking_app/widgets/transaction/transaction_list.dart';
 import 'package:banking_app/widgets/components/my_text.dart';
 import 'package:banking_app/data/budget_data.dart';
 import 'package:banking_app/widgets/date_sorting/date_sorting_bar.dart';
@@ -9,14 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:icons_flutter/icons_flutter.dart';
 import 'package:intl/intl.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class TransactionsScreen extends StatefulWidget {
+  const TransactionsScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<TransactionsScreen> createState() => _TransactionsScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _TransactionsScreenState extends State<TransactionsScreen> {
   void sortBy(SortBy sortBy) {
     // setState(() {
     //   if (sortBy == SortBy.day) {
@@ -119,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: Column(
                       children: [
-                        BudgetList(transactions: budgetData),
+                        TransactionList(transactions: budgetData),
                         Padding(
                           padding:
                               EdgeInsets.symmetric(vertical: 10, horizontal: 5),

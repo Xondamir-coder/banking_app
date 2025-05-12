@@ -1,5 +1,6 @@
 import 'package:banking_app/widgets/screens/auth_screen.dart';
-import 'package:banking_app/widgets/screens/home_screen.dart';
+import 'package:banking_app/widgets/screens/boards_screen.dart';
+import 'package:banking_app/widgets/screens/transactions_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -42,7 +43,7 @@ class MyApp extends StatelessWidget {
             );
           }
           if (snapshot.hasData && snapshot.data != null) {
-            return const HomeScreen();
+            return const BoardsScreen();
           }
           return const AuthScreen();
         },

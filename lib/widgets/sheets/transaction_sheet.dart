@@ -1,5 +1,4 @@
 import 'package:banking_app/models/category_model.dart';
-import 'package:banking_app/utils/db_operations.dart';
 import 'package:banking_app/widgets/components/my_text.dart';
 import 'package:flutter/material.dart';
 import 'package:icons_flutter/icons_flutter.dart';

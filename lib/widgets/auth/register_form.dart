@@ -1,4 +1,5 @@
 import 'package:banking_app/widgets/components/my_text.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -11,6 +12,7 @@ class RegisterForm extends StatefulWidget {
 
 class _RegisterFormState extends State<RegisterForm> {
   final _formKey = GlobalKey<FormState>();
+  var _name = '';
   var _email = '';
   var _password = '';
   var _obscurePass = true;
@@ -22,9 +24,20 @@ class _RegisterFormState extends State<RegisterForm> {
     }
     _formKey.currentState!.save();
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _email,
         password: _password,
+      );
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set(
+        {
+          'id': userCredential.user!.uid,
+          'email': _email,
+          'name': _name,
+        },
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -51,6 +64,24 @@ class _RegisterFormState extends State<RegisterForm> {
         child: Column(
           spacing: 12,
           children: [
+            TextFormField(
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                label: MyText(
+                  'Name',
+                  color: Theme.of(context).colorScheme.secondaryFixedDim,
+                ),
+              ),
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return 'Please enter a name';
+                }
+                return null;
+              },
+              onSaved: (value) {
+                _name = value!;
+              },
+            ),
             TextFormField(
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(

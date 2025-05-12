@@ -26,6 +26,12 @@ class _LoginFormState extends State<LoginForm> {
         email: _email,
         password: _password,
       );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login successful!'),
+        ),
+      );
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -57,7 +63,7 @@ class _LoginFormState extends State<LoginForm> {
                 if (value!.isEmpty) {
                   return 'Please enter an email';
                 }
-                return 'Successful';
+                return null;
               },
               onSaved: (value) {
                 _email = value!;
@@ -87,7 +93,7 @@ class _LoginFormState extends State<LoginForm> {
                 if (value!.isEmpty) {
                   return 'Please enter a password';
                 }
-                return 'Successful';
+                return null;
               },
               onSaved: (value) {
                 _password = value!;
