@@ -1,6 +1,7 @@
 import 'package:banking_app/data/categories_data.dart';
 import 'package:banking_app/widgets/components/my_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:icons_flutter/icons_flutter.dart';
 
 class CategorySheet extends StatelessWidget {
@@ -45,7 +46,15 @@ class CategorySheet extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(category.iconData),
+                      SvgPicture.string(
+                        category.iconPath,
+                        width: 22,
+                        height: 22,
+                        colorFilter: ColorFilter.mode(
+                          Colors.white,
+                          BlendMode.srcIn,
+                        ),
+                      ),
                       const SizedBox(height: 4),
                       MyText(category.name),
                     ],

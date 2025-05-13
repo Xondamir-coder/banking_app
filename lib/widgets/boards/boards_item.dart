@@ -1,19 +1,19 @@
 import 'package:banking_app/widgets/components/my_text.dart';
+import 'package:banking_app/widgets/screens/transactions_screen.dart';
+import 'package:banking_app/widgets/sheets/board_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:banking_app/models/board_model.dart';
 import 'package:icons_flutter/icons_flutter.dart';
 
 class BoardsItem extends StatelessWidget {
+  final DocumentReference ref;
   final BoardModel board;
-  final VoidCallback? onEdit;
-  final VoidCallback? onDelete;
 
   const BoardsItem({
     super.key,
+    required this.ref,
     required this.board,
-    this.onEdit,
-    this.onDelete,
   });
 
   /// Fetches each member's name from `/users` by their IDs
@@ -34,7 +34,14 @@ class BoardsItem extends StatelessWidget {
       color: Theme.of(context).colorScheme.secondary,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TransactionsScreen(ref: ref),
+            ),
+          );
+        },
         borderRadius: BorderRadius.circular(10),
         child: Card(
           elevation: 0,
@@ -62,14 +69,24 @@ class BoardsItem extends StatelessWidget {
                         FontAwesome.edit,
                         color: Theme.of(context).colorScheme.tertiaryFixed,
                       ),
-                      onPressed: onEdit,
+                      onPressed: () async {
+                        await showModalBottomSheet(
+                          context: context,
+                          builder: (context) => BoardSheet(
+                            board: board,
+                            reference: ref,
+                          ),
+                        );
+                      },
                     ),
                     IconButton(
                       icon: Icon(
                         FontAwesome.remove,
                         color: Theme.of(context).colorScheme.error,
                       ),
-                      onPressed: onDelete,
+                      onPressed: () {
+                        ref.delete();
+                      },
                     ),
                   ],
                 ),

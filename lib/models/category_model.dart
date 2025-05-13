@@ -1,31 +1,29 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 const uuid = Uuid();
 
 class CategoryModel {
   final String name;
-  final IconData iconData;
+  final String iconPath;
 
   CategoryModel({
     required this.name,
-    required this.iconData,
+    required this.iconPath,
   });
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'name': name,
-      'iconData': iconData,
+      'icon_path': iconPath,
     };
   }
 
   factory CategoryModel.fromMap(Map<String, dynamic> map) {
     return CategoryModel(
       name: map['name'] as String,
-      iconData: map['iconData'] as IconData,
-      // iconData: map['iconString'] as String,
+      iconPath: map['icon_path'] as String,
     );
   }
 

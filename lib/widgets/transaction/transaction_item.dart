@@ -1,6 +1,7 @@
 import 'package:banking_app/widgets/components/my_text.dart';
 import 'package:banking_app/models/transaction_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:icons_flutter/icons_flutter.dart';
 import 'package:intl/intl.dart';
 
@@ -13,6 +14,7 @@ class TransactionItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       spacing: 6,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
@@ -24,7 +26,7 @@ class TransactionItem extends StatelessWidget {
                     color: Theme.of(context).colorScheme.secondaryFixed,
                   ),
                   MyText(
-                    DateFormat('dd-MM-yyyy HH:mm').format(DateTime.now()),
+                    DateFormat('dd-MM-yyyy HH:mm').format(data.timestamp!),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -41,9 +43,10 @@ class TransactionItem extends StatelessWidget {
                         'Category',
                         color: Theme.of(context).colorScheme.secondaryFixed,
                       ),
-                      Icon(
-                        data.category.iconData,
-                        size: 15,
+                      SvgPicture.string(
+                        data.category.iconPath,
+                        width: 16,
+                        height: 16,
                         color: Theme.of(context).colorScheme.tertiaryFixedDim,
                       ),
                     ],
@@ -86,12 +89,26 @@ class TransactionItem extends StatelessWidget {
           ],
         ),
         if (data.description.isNotEmpty)
-          Align(
-            alignment: Alignment.centerLeft,
-            child: MyText(
-              'Description: ${data.description}',
-            ),
+          Row(
+            children: [
+              MyText(
+                'Description: ',
+                color: Theme.of(context).colorScheme.secondaryFixed,
+              ),
+              MyText(
+                data.description,
+              ),
+            ],
           ),
+        Row(
+          children: [
+            MyText('User: ',
+                color: Theme.of(context).colorScheme.secondaryFixed),
+            MyText(
+              data.user.name,
+            ),
+          ],
+        ),
       ],
     );
   }

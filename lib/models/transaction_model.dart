@@ -2,6 +2,8 @@
 import 'dart:convert';
 
 import 'package:banking_app/models/category_model.dart';
+import 'package:banking_app/models/user_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TransactionModel {
   final String description;
@@ -9,6 +11,8 @@ class TransactionModel {
   final CategoryModel category;
   final bool isExpense;
   final bool isCash;
+  final UserModel user;
+  final DateTime? timestamp;
 
   const TransactionModel({
     String? description,
@@ -16,6 +20,8 @@ class TransactionModel {
     required this.category,
     required this.isExpense,
     required this.isCash,
+    required this.user,
+    this.timestamp,
   }) : description = description ?? '';
 
   Map<String, dynamic> toMap() {
@@ -25,16 +31,20 @@ class TransactionModel {
       'category': category.toMap(),
       'isExpense': isExpense,
       'isCash': isCash,
+      'user': user.toMap(),
+      'timestamp': FieldValue.serverTimestamp(),
     };
   }
 
   factory TransactionModel.fromMap(Map<String, dynamic> map) {
     return TransactionModel(
-      description: map['description'] as String,
+      description: map['description'] as String?,
       amount: map['amount'] as String,
       category: CategoryModel.fromMap(map['category'] as Map<String, dynamic>),
       isExpense: map['isExpense'] as bool,
       isCash: map['isCash'] as bool,
+      user: UserModel.fromMap(map['user'] as Map<String, dynamic>),
+      timestamp: (map['timestamp'] as Timestamp).toDate(),
     );
   }
 

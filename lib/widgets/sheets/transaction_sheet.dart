@@ -1,5 +1,9 @@
 import 'package:banking_app/models/category_model.dart';
+import 'package:banking_app/models/transaction_model.dart';
+import 'package:banking_app/models/user_model.dart';
 import 'package:banking_app/widgets/components/my_text.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:icons_flutter/icons_flutter.dart';
 
@@ -53,19 +57,19 @@ class _TransactionSheetState extends State<TransactionSheet> {
               Row(
                 children: [
                   Checkbox.adaptive(
-                    value: _isExpense,
+                    value: !_isExpense,
                     onChanged: (value) {
                       setState(() {
-                        _isExpense = true;
+                        _isExpense = false;
                       });
                     },
                   ),
                   const MyText('Income', color: Colors.green),
                   Checkbox.adaptive(
-                    value: !_isExpense,
+                    value: _isExpense,
                     onChanged: (value) {
                       setState(() {
-                        _isExpense = false;
+                        _isExpense = true;
                       });
                     },
                   ),
@@ -131,17 +135,21 @@ class _TransactionSheetState extends State<TransactionSheet> {
               final amount = amountTextController.text.trim();
               final desc = descTextController.text.trim();
               if (amount.isEmpty) return;
-              try {
-                //  DbOperations.addTransaction(board, transaction)
-              } catch (e) {}
-              // final budget = TransactionModel(
-              //   amount: amount,
-              //   category: widget.category,
-              //   isExpense: _isExpense,
-              //   isCash: _isCash,
-              //   description: desc,
-              // );
-              // Navigator.of(context).pop(budget);
+              final userData = (await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(FirebaseAuth.instance.currentUser!.uid)
+                      .get())
+                  .data() as Map<String, dynamic>;
+              final data = TransactionModel(
+                amount: amount,
+                category: widget.category,
+                isExpense: _isExpense,
+                isCash: _isCash,
+                description: desc,
+                user: UserModel.fromMap(userData),
+              );
+              if (!context.mounted) return;
+              Navigator.of(context).pop(data);
             },
           ),
           Spacer(),

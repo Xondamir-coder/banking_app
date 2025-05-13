@@ -5,7 +5,6 @@ import 'package:banking_app/widgets/sheets/board_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:icons_flutter/icons_flutter.dart';
 
 class BoardsScreen extends StatelessWidget {
   const BoardsScreen({super.key});
@@ -67,20 +66,7 @@ class BoardsScreen extends StatelessWidget {
               itemCount: boards.length,
               itemBuilder: (context, index) => BoardsItem(
                 board: boards[index],
-                onEdit: () async {
-                  final ref = snapshot.data!.docs[index].reference;
-                  await showModalBottomSheet(
-                    context: context,
-                    builder: (context) => BoardSheet(
-                      board: boards[index],
-                      reference: ref,
-                    ),
-                  );
-                },
-                onDelete: () {
-                  final ref = snapshot.data!.docs[index].reference;
-                  ref.delete();
-                },
+                ref: snapshot.data!.docs[index].reference,
               ),
             );
           },

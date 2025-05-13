@@ -1,80 +1,87 @@
 import 'package:banking_app/models/category_model.dart';
-import 'package:banking_app/widgets/transaction/transaction_list.dart';
+import 'package:banking_app/models/transaction_model.dart';
+import 'package:banking_app/widgets/transaction/transaction_item.dart';
 import 'package:banking_app/widgets/components/my_text.dart';
-import 'package:banking_app/data/budget_data.dart';
 import 'package:banking_app/widgets/date_sorting/date_sorting_bar.dart';
 import 'package:banking_app/widgets/sheets/category_sheet.dart';
 import 'package:banking_app/widgets/sheets/transaction_sheet.dart';
+import 'package:banking_app/widgets/transaction/transaction_total.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:icons_flutter/icons_flutter.dart';
-import 'package:intl/intl.dart';
 
 class TransactionsScreen extends StatefulWidget {
-  const TransactionsScreen({super.key});
+  final DocumentReference ref;
+
+  const TransactionsScreen({required this.ref, super.key});
 
   @override
   State<TransactionsScreen> createState() => _TransactionsScreenState();
 }
 
 class _TransactionsScreenState extends State<TransactionsScreen> {
+  late Query _query;
+
   void sortBy(SortBy sortBy) {
-    // setState(() {
-    //   if (sortBy == SortBy.day) {
-    //     budget = budgetData
-    //         .where((element) =>
-    //             element.date.day == DateTime.now().day &&
-    //             element.date.month == DateTime.now().month &&
-    //             element.date.year == DateTime.now().year)
-    //         .toList();
-    //   } else if (sortBy == SortBy.week) {
-    //     int currentWeek = DateTime.now().weekday;
-    //     budget = budgetData
-    //         .where((element) =>
-    //             element.date.weekday == currentWeek &&
-    //             element.date.year == DateTime.now().year)
-    //         .toList();
-    //   } else if (sortBy == SortBy.month) {
-    //     int currentMonth = DateTime.now().month;
-    //     budget = budgetData
-    //         .where((element) =>
-    //             element.date.month == currentMonth &&
-    //             element.date.year == DateTime.now().year)
-    //         .toList();
-    //   } else if (sortBy == SortBy.year) {
-    //     int currentYear = DateTime.now().year;
-    //     budget = budgetData
-    //         .where((element) => element.date.year == currentYear)
-    //         .toList();
-    //   } else {
-    //     budget = budgetData;
-    //   }
-    //   budget.sort((a, b) => a.date.compareTo(b.date));
-    // });
+    final now = DateTime.now();
+    DateTime? start;
+    DateTime? end;
+
+    switch (sortBy) {
+      case (SortBy.day):
+        start = DateTime(now.year, now.month, now.day);
+        end = start.add(Duration(days: 1));
+        break;
+      case SortBy.week:
+        // Assuming week starts on Monday. Adjust `.weekday` offset as needed.
+        start = DateTime(now.year, now.month, now.day)
+            .subtract(Duration(days: now.weekday - 1));
+        end = start.add(Duration(days: 7));
+        break;
+      case SortBy.month:
+        start = DateTime(now.year, now.month, 1);
+        // next month’s first day:
+        end = (now.month < 12)
+            ? DateTime(now.year, now.month + 1, 1)
+            : DateTime(now.year + 1, 1, 1);
+        break;
+      case SortBy.year:
+        start = DateTime(now.year, 1, 1);
+        end = DateTime(now.year + 1, 1, 1);
+        break;
+      case SortBy.all:
+        // no time bounds
+        _query = widget.ref.collection('transactions').orderBy('timestamp');
+    }
+
+    _query = widget.ref
+        .collection('transactions')
+        .where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(start!))
+        .where('timestamp', isLessThan: Timestamp.fromDate(end!))
+        .orderBy('timestamp');
   }
 
   @override
   void initState() {
     super.initState();
-    // setState(() {
-    //   budget = budgetData
-    //       .where((element) =>
-    //           element.date.day == DateTime.now().day &&
-    //           element.date.month == DateTime.now().month &&
-    //           element.date.year == DateTime.now().year)
-    //       .toList();
-    //   budget.sort((a, b) => a.date.compareTo(b.date));
-    // });
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    final startOfTomorrow = startOfDay.add(Duration(days: 1));
+    _query = widget.ref
+        .collection('transactions')
+        .where(
+          'timestamp',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
+        )
+        .where(
+          'timestamp',
+          isLessThan: Timestamp.fromDate(startOfTomorrow),
+        )
+        .orderBy('timestamp');
   }
 
   @override
   Widget build(BuildContext context) {
-    final totalAmount = budgetData.fold(
-      0,
-      (prev, element) => element.isExpense
-          ? prev - int.parse(element.amount)
-          : prev + int.parse(element.amount),
-    );
-
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -92,15 +99,21 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   builder: (context) => CategorySheet(),
                 );
                 if (!context.mounted) return;
-                final data = await showModalBottomSheet(
+                final TransactionModel transactionData =
+                    await showModalBottomSheet(
                   context: context,
                   builder: (ctx) => TransactionSheet(category: category),
                 );
-                // setState(() {
-                //   budget.add(data);
-                // });
+                widget.ref
+                    .collection('transactions')
+                    .add(transactionData.toMap());
               } catch (e) {
-                print('Sheet is closed');
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Sheet is closed'),
+                  ),
+                );
               }
             },
             icon: Icon(
@@ -109,50 +122,92 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           ),
         ],
       ),
-      body: budgetData.isNotEmpty
-          ? Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                spacing: 10,
-                children: [
-                  DateSortingBar(onSort: sortBy),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        TransactionList(transactions: budgetData),
-                        Padding(
-                          padding:
-                              EdgeInsets.symmetric(vertical: 10, horizontal: 5),
-                          child: Row(
-                            spacing: 5,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                totalAmount >= 0
-                                    ? FontAwesome.arrow_circle_up
-                                    : FontAwesome.arrow_circle_down,
-                                color: totalAmount >= 0
-                                    ? Colors.green
-                                    : Colors.red,
-                              ),
-                              MyText(
-                                '${totalAmount > 0 ? '+' : ''}${NumberFormat.currency(symbol: '', decimalDigits: 0).format(totalAmount)}',
-                                color: totalAmount >= 0
-                                    ? Colors.green
-                                    : Colors.red,
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ],
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _query.snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: MyText(
+                'Something went wrong',
+                fontSize: 20,
               ),
-            )
-          : const Center(
-              child: Text('No transactions'),
+            );
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          final transactions = snapshot.data!.docs
+              .map((doc) =>
+                  TransactionModel.fromMap(doc.data() as Map<String, dynamic>))
+              .toList();
+
+          if (transactions.isEmpty) {
+            return const Center(
+              child: MyText(
+                'No transactions yet',
+                fontSize: 20,
+              ),
+            );
+          }
+
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              spacing: 10,
+              children: [
+                DateSortingBar(
+                  onSort: sortBy,
+                ),
+                Expanded(
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: ListView.separated(
+                          itemBuilder: (ctx, index) => Dismissible(
+                            key: ValueKey(index),
+                            direction: DismissDirection.endToStart,
+                            onDismissed: (direction) {
+                              snapshot.data!.docs[index].reference.delete();
+                            },
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 20),
+                              color: Theme.of(context).colorScheme.error,
+                              child: const Icon(
+                                Icons.delete,
+                                color: Colors.white,
+                              ),
+                            ),
+                            child: TransactionItem(
+                              data: transactions[index],
+                            ),
+                          ),
+                          separatorBuilder: (ctx, index) => const Divider(
+                            height: 30,
+                          ),
+                          itemCount: transactions.length,
+                        ),
+                      ),
+                      TransactionTotal(
+                        totalAmount: transactions.fold(
+                          0,
+                          (prev, element) => element.isExpense
+                              ? prev - int.parse(element.amount)
+                              : prev + int.parse(element.amount),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
+          );
+        },
+      ),
     );
   }
 }

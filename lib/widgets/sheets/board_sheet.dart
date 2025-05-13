@@ -29,7 +29,6 @@ class _BoardSheetState extends State<BoardSheet> {
           'name': _name,
           'description': _description,
           'members': [FirebaseAuth.instance.currentUser!.uid],
-          'transactions': [],
         });
       } else {
         await widget.reference!.update({
@@ -57,7 +56,6 @@ class _BoardSheetState extends State<BoardSheet> {
   @override
   void initState() {
     super.initState();
-    print(widget.board);
     if (widget.board != null) {
       _name = widget.board!.name;
       _description = widget.board!.description;
