@@ -24,41 +24,45 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
   void sortBy(SortBy sortBy) {
     final now = DateTime.now();
-    DateTime? start;
-    DateTime? end;
 
-    switch (sortBy) {
-      case (SortBy.day):
-        start = DateTime(now.year, now.month, now.day);
-        end = start.add(Duration(days: 1));
-        break;
-      case SortBy.week:
-        // Assuming week starts on Monday. Adjust `.weekday` offset as needed.
-        start = DateTime(now.year, now.month, now.day)
-            .subtract(Duration(days: now.weekday - 1));
-        end = start.add(Duration(days: 7));
-        break;
-      case SortBy.month:
-        start = DateTime(now.year, now.month, 1);
-        // next month’s first day:
-        end = (now.month < 12)
-            ? DateTime(now.year, now.month + 1, 1)
-            : DateTime(now.year + 1, 1, 1);
-        break;
-      case SortBy.year:
-        start = DateTime(now.year, 1, 1);
-        end = DateTime(now.year + 1, 1, 1);
-        break;
-      case SortBy.all:
-        // no time bounds
-        _query = widget.ref.collection('transactions').orderBy('timestamp');
-    }
+    setState(() {
+      DateTime? start;
+      DateTime? end;
 
-    _query = widget.ref
-        .collection('transactions')
-        .where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(start!))
-        .where('timestamp', isLessThan: Timestamp.fromDate(end!))
-        .orderBy('timestamp');
+      switch (sortBy) {
+        case (SortBy.day):
+          start = DateTime(now.year, now.month, now.day);
+          end = start.add(Duration(days: 1));
+          break;
+        case SortBy.week:
+          // Assuming week starts on Monday. Adjust `.weekday` offset as needed.
+          start = DateTime(now.year, now.month, now.day)
+              .subtract(Duration(days: now.weekday - 1));
+          end = start.add(Duration(days: 7));
+          break;
+        case SortBy.month:
+          start = DateTime(now.year, now.month, 1);
+          // next month’s first day:
+          end = (now.month < 12)
+              ? DateTime(now.year, now.month + 1, 1)
+              : DateTime(now.year + 1, 1, 1);
+          break;
+        case SortBy.year:
+          start = DateTime(now.year, 1, 1);
+          end = DateTime(now.year + 1, 1, 1);
+          break;
+        case SortBy.all:
+          // no time bounds
+          _query = widget.ref.collection('transactions').orderBy('timestamp');
+      }
+
+      _query = widget.ref
+          .collection('transactions')
+          .where('timestamp',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(start!))
+          .where('timestamp', isLessThan: Timestamp.fromDate(end!))
+          .orderBy('timestamp');
+    });
   }
 
   @override
@@ -122,47 +126,47 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           ),
         ],
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _query.snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(
-              child: MyText(
-                'Something went wrong',
-                fontSize: 20,
-              ),
-            );
-          }
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          spacing: 10,
+          children: [
+            DateSortingBar(
+              onSort: sortBy,
+            ),
+            StreamBuilder<QuerySnapshot>(
+              stream: _query.snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return const Center(
+                    child: MyText(
+                      'Something went wrong',
+                      fontSize: 20,
+                    ),
+                  );
+                }
 
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
 
-          final transactions = snapshot.data!.docs
-              .map((doc) =>
-                  TransactionModel.fromMap(doc.data() as Map<String, dynamic>))
-              .toList();
+                final transactions = snapshot.data!.docs
+                    .map((doc) => TransactionModel.fromMap(
+                        doc.data() as Map<String, dynamic>))
+                    .toList();
 
-          if (transactions.isEmpty) {
-            return const Center(
-              child: MyText(
-                'No transactions yet',
-                fontSize: 20,
-              ),
-            );
-          }
+                if (transactions.isEmpty) {
+                  return const Center(
+                    child: MyText(
+                      'No transactions present',
+                      fontSize: 20,
+                    ),
+                  );
+                }
 
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              spacing: 10,
-              children: [
-                DateSortingBar(
-                  onSort: sortBy,
-                ),
-                Expanded(
+                return Expanded(
                   child: Column(
                     children: [
                       Expanded(
@@ -202,11 +206,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       ),
                     ],
                   ),
-                ),
-              ],
+                );
+              },
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }
