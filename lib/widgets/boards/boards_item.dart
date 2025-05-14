@@ -1,7 +1,6 @@
 import 'package:banking_app/models/user_model.dart';
 import 'package:banking_app/widgets/components/my_text.dart';
 import 'package:banking_app/widgets/screens/board_screen.dart';
-import 'package:banking_app/widgets/transaction/transactions_list.dart';
 import 'package:banking_app/widgets/sheets/board_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

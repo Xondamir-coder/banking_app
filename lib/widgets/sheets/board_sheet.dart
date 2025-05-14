@@ -1,5 +1,4 @@
 import 'package:banking_app/models/board_model.dart';
-import 'package:banking_app/models/user_model.dart';
 import 'package:banking_app/widgets/components/my_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';

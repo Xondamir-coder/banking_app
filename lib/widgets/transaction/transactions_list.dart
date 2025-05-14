@@ -59,9 +59,8 @@ class _TransactionsListState extends State<TransactionsList> {
 
       _query = widget.ref
           .collection('transactions')
-          .where('timestamp',
-              isGreaterThanOrEqualTo: Timestamp.fromDate(start!))
-          .where('timestamp', isLessThan: Timestamp.fromDate(end!))
+          .where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+          .where('timestamp', isLessThan: Timestamp.fromDate(end))
           .orderBy('timestamp');
     });
   }
