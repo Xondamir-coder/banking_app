@@ -6,13 +6,13 @@ import 'package:banking_app/models/transaction_model.dart';
 class BoardModel {
   final String name;
   final String description;
-  final List<String> members;
+  final List<String> memberIDs;
   final List<TransactionModel> transactions;
 
   const BoardModel({
     required this.name,
     required this.description,
-    required this.members,
+    required this.memberIDs,
     required this.transactions,
   });
 
@@ -20,7 +20,7 @@ class BoardModel {
     return <String, dynamic>{
       'name': name,
       'description': description,
-      'members': members,
+      'members': memberIDs,
       'transactions': transactions.map((x) => x.toMap()).toList(),
     };
   }
@@ -29,7 +29,7 @@ class BoardModel {
     return BoardModel(
       name: map['name'] as String,
       description: map['description'] as String,
-      members: map['members'] != null
+      memberIDs: map['members'] != null
           ? List<String>.from(map['members'] as List)
           : [],
       transactions: map['transactions'] != null

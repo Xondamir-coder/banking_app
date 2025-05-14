@@ -1,4 +1,5 @@
 import 'package:banking_app/models/board_model.dart';
+import 'package:banking_app/models/user_model.dart';
 import 'package:banking_app/widgets/components/my_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,6 +19,7 @@ class _BoardSheetState extends State<BoardSheet> {
   final _formKey = GlobalKey<FormState>();
   var _name = '';
   var _description = '';
+  var _isUpdating = false;
 
   void _submitForm() async {
     final isValid = _formKey.currentState!.validate();
@@ -25,11 +27,24 @@ class _BoardSheetState extends State<BoardSheet> {
     _formKey.currentState!.save();
     try {
       if (widget.board == null && widget.reference == null) {
-        await FirebaseFirestore.instance.collection('boards').doc().set({
+        final ref = FirebaseFirestore.instance.collection('boards').doc();
+
+        // Board Data
+        await ref.set({
           'name': _name,
           'description': _description,
-          'members': [FirebaseAuth.instance.currentUser!.uid],
+          'memberIDs': [FirebaseAuth.instance.currentUser!.uid],
         });
+
+        // Members collection info
+        final userData = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .get();
+        await ref
+            .collection('members')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .set(userData.data()!);
       } else {
         await widget.reference!.update({
           'name': _name,
@@ -59,6 +74,7 @@ class _BoardSheetState extends State<BoardSheet> {
     if (widget.board != null) {
       _name = widget.board!.name;
       _description = widget.board!.description;
+      _isUpdating = true;
     }
   }
 
@@ -93,7 +109,7 @@ class _BoardSheetState extends State<BoardSheet> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _submitForm,
-              child: MyText('Create'),
+              child: MyText(_isUpdating ? 'Update Board' : 'Add Board'),
             ),
           ],
         ),

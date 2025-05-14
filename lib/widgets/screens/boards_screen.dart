@@ -40,7 +40,7 @@ class BoardsScreen extends StatelessWidget {
           stream: FirebaseFirestore.instance
               .collection('boards')
               .where(
-                'members',
+                'memberIDs',
                 arrayContains: FirebaseAuth.instance.currentUser!.uid,
               )
               .snapshots(),
@@ -62,8 +62,9 @@ class BoardsScreen extends StatelessWidget {
               return const MyText('No boards present');
             }
 
-            return ListView.builder(
+            return ListView.separated(
               itemCount: boards.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 10),
               itemBuilder: (context, index) => BoardsItem(
                 board: boards[index],
                 ref: snapshot.data!.docs[index].reference,
